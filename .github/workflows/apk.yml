@@ -63,20 +63,20 @@ jobs:
           yes | sdkmanager --licenses > /dev/null || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      # The project's gradlew script is incomplete (APP_HOME is never set), so
+      # we use a real Gradle 8.9 installed by this action instead of ./gradlew.
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
 
       - name: Build release APK
         working-directory: ${{ steps.locate.outputs.dir }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assembleRelease --stacktrace --no-daemon
+        run: gradle assembleRelease --stacktrace --no-daemon
 
       - name: Build debug APK (backup)
         if: always() && steps.locate.outcome == 'success'
         working-directory: ${{ steps.locate.outputs.dir }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+        run: gradle assembleDebug --stacktrace --no-daemon
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.locate.outcome == 'success'
